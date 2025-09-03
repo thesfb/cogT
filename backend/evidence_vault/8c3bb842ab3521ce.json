@@ -1,0 +1,25 @@
+{
+  "id": "8c3bb842ab3521ce",
+  "timestamp": "2025-09-03T15:28:07.679806",
+  "content": "VIP mentioned in Telegram channel None. Variation found: None",
+  "metadata": {
+    "vip_handle": "narendramodi",
+    "platform": "Telegram",
+    "original_url": null,
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 1.0,
+      "drift_score": 37.71,
+      "visual_threat_score": 0,
+      "justification": "The external claim states a lack of specific information, which bears no relation to or contradiction with the VIP's positive past statements about national initiatives.",
+      "visual_details": {}
+    },
+    "classification": {
+      "level": "low",
+      "score": 3.771
+    },
+    "fake_account_analysis": null
+  },
+  "integrity_hash": "af4ef1f25ec3eb1fcc9e3f30f84833d0d2b1c31969de0562f3045a6cdf56ce6e",
+  "blockchain_simulation": "38d6821af4ba3c09c1c5279f7a12ed2a9fa82de95fe239a9e22e060ff422e22d"
+}

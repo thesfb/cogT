@@ -1,0 +1,30 @@
+{
+  "id": "70a1929ae275b140",
+  "timestamp": "2025-09-03T14:32:11.247907",
+  "content": "A picture is worth a thousand words.",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "instagram",
+    "original_url": "http://example.com/instapost/789",
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 1.0,
+      "drift_score": 7.72,
+      "visual_threat_score": 0,
+      "justification": "The VIP's appreciation for the emotional impact of a visual symbol (the Indian flag) supports the external claim, and valuing spoken words does not contradict the power of images.",
+      "visual_details": {
+        "image": {
+          "perceptual_hash": null,
+          "labels": [],
+          "ocr_text": ""
+        }
+      }
+    },
+    "classification": {
+      "level": "low",
+      "score": 0.772
+    }
+  },
+  "integrity_hash": "ed1a01bbe754b6f1cd6510fd6f2a477b4298facf5e62f6c50f6ebfeea39b7bf8",
+  "blockchain_simulation": "5e42b35f0699697722a2ae72a8b2a1338520458cf6e4a7448a7eab2032e031de"
+}

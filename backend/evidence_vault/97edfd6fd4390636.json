@@ -1,0 +1,28 @@
+{
+  "id": "97edfd6fd4390636",
+  "timestamp": "2025-09-03T12:32:59.710893",
+  "content": "yo fam, just YOLOed my life savings into some sketchy crypto coin lol. markets are for boomers. this is the new hustle. #getrichordietryin #fraud",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "X/Twitter",
+    "url": "https://twitter.com/TotallyNotManish/status/1234567890",
+    "analysis_result": {
+      "dissonance": {
+        "score": 9.8,
+        "justification": "The external claim promotes impulsive, high-risk, and potentially fraudulent financial behavior, which directly contradicts the VIP's stated values of discipline, steady growth, and ethical entrepreneurial mentorship."
+      },
+      "drift": {
+        "drift_score": 11.17
+      },
+      "score": 9.8,
+      "drift_score": 11.17,
+      "justification": "The external claim promotes impulsive, high-risk, and potentially fraudulent financial behavior, which directly contradicts the VIP's stated values of discipline, steady growth, and ethical entrepreneurial mentorship."
+    },
+    "classification": {
+      "level": "critical",
+      "score": 10.0
+    }
+  },
+  "integrity_hash": "66910fc6bb05721219a72b072c1c0cb4c292a21d40aef985d269aef707967b0f",
+  "blockchain_simulation": "f1eaa0f58df1e6c6310cf39813382cc3a1e8949503d3ce06abb38b2ebc11b595"
+}

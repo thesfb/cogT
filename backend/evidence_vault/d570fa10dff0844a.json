@@ -1,0 +1,25 @@
+{
+  "id": "d570fa10dff0844a",
+  "timestamp": "2025-09-03T16:25:49.376256",
+  "content": "Just quit my job to become a full-time crypto day trader. To the moon! \ud83d\ude80",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "TestPlatform",
+    "original_url": "http://example.com/post/123",
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 9.0,
+      "drift_score": 25.75,
+      "visual_threat_score": 0,
+      "justification": "The claim's impulsive, high-risk 'to the moon' crypto day trading mentality directly contrasts with the VIP's stated values of discipline, calmness in markets, and a demonstrated commitment to long-term strategic effort and negotiation.",
+      "visual_details": {}
+    },
+    "classification": {
+      "level": "critical",
+      "score": 9.0
+    },
+    "fake_account_analysis": null
+  },
+  "integrity_hash": "aca1cb68d491a6b98f6e38d68ae62681b37506fbb4b7b41c82c751a76aee3ada",
+  "blockchain_simulation": "c997513e67af8571b0b2a5638aefc0267a939a54ed38522b5211166231da5c5f"
+}

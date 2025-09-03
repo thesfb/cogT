@@ -1,0 +1,29 @@
+{
+  "id": "c3f6695e42743843",
+  "timestamp": "2025-09-03T12:56:55.266490",
+  "content": "This is a test to archive a URL for evidence.",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "wikipedia",
+    "original_url": "https://en.wikipedia.org/wiki/Internet_Archive",
+    "archived_url": "https://web.archive.org",
+    "analysis_result": {
+      "dissonance": {
+        "score": 8.5,
+        "justification": "The claim describes a modern, digital, and somewhat tech-savvy action, which directly conflicts with the VIP's consistent self-description as 'old-fashioned' and their stated preference for non-digital methods like physical newspapers and handwritten notes over emails."
+      },
+      "drift": {
+        "drift_score": 30.43
+      },
+      "score": 8.5,
+      "drift_score": 30.43,
+      "justification": "The claim describes a modern, digital, and somewhat tech-savvy action, which directly conflicts with the VIP's consistent self-description as 'old-fashioned' and their stated preference for non-digital methods like physical newspapers and handwritten notes over emails."
+    },
+    "classification": {
+      "level": "high",
+      "score": 8.5
+    }
+  },
+  "integrity_hash": "81e794d1be9a1d6373022845ca2b7a00ea77886f8fc29cf6c99da96bd3d6e8f2",
+  "blockchain_simulation": "d20713e74e29a612eab338b8b49cf594a5e315b9baf04da8750c5ecd8b41043d"
+}

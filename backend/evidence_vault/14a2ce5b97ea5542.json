@@ -1,0 +1,29 @@
+{
+  "id": "14a2ce5b97ea5542",
+  "timestamp": "2025-09-03T12:54:22.796300",
+  "content": "omg just dropped my life savings on a dogecoin pump, yolo to the moon \ud83d\ude80\ud83d\ude80\ud83d\ude80 #crypto #getrichquick",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "twitter",
+    "original_url": "https://twitter.com/fake_account/status/98765",
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance": {
+        "score": 9.5,
+        "justification": "The claim's impulsive, high-risk 'get rich quick' strategy directly contradicts the VIP's stated values of discipline, steady growth, and a calm, peaceful mindset."
+      },
+      "drift": {
+        "drift_score": 67.66
+      },
+      "score": 9.5,
+      "drift_score": 67.66,
+      "justification": "The claim's impulsive, high-risk 'get rich quick' strategy directly contradicts the VIP's stated values of discipline, steady growth, and a calm, peaceful mindset."
+    },
+    "classification": {
+      "level": "critical",
+      "score": 9.5
+    }
+  },
+  "integrity_hash": "9d3d6d0f7f6b9094960b6f7aa4c3c6f637128265bfe5fb700f1e1e1b906e2819",
+  "blockchain_simulation": "789054408643bcb5d74d1297fcf69825c055456fcc9e6e78c1de2f9a95519b26"
+}

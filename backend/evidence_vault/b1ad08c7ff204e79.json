@@ -1,0 +1,28 @@
+{
+  "id": "b1ad08c7ff204e79",
+  "timestamp": "2025-09-03T14:34:30.034957",
+  "content": "Sharing this important video message.",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "youtube",
+    "original_url": "http://example.com/youtube/101",
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 1.0,
+      "drift_score": 34.85,
+      "visual_threat_score": 0,
+      "justification": "The external claim is a neutral statement about sharing a video, and without knowing the content of the video, there is no basis to infer any conflict with the VIP's stated interests or values.",
+      "visual_details": {
+        "video": {
+          "audio_transcript": ""
+        }
+      }
+    },
+    "classification": {
+      "level": "low",
+      "score": 3.4850000000000003
+    }
+  },
+  "integrity_hash": "a033a787b03c20ba40bdb82501eb8ccba74475c86a019cd55639ab2c560e1c70",
+  "blockchain_simulation": "252e6700879fa0f3fb6137d622b76c0ab949ef45ea0f62808b9e5d88f5cb165f"
+}

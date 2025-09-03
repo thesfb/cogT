@@ -1,0 +1,24 @@
+{
+  "id": "eb93e30dfbcebc69",
+  "timestamp": "2025-09-03T15:07:08.181998",
+  "content": "URGENT WARNING: Manish Patel has been compromised. All his recent business deals are a fraud and a scam to trick investors. He is a liar.",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "X/Twitter",
+    "original_url": "https://twitter.com/fakepost/12345",
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 1.0,
+      "drift_score": 9.82,
+      "visual_threat_score": 0,
+      "justification": "The VIP's positive statements about business and deals are unrelated to the external claim concerning a third party's alleged fraud, thus presenting no internal conflict for the VIP.",
+      "visual_details": {}
+    },
+    "classification": {
+      "level": "low",
+      "score": 2.482
+    }
+  },
+  "integrity_hash": "51fa326dae32567b80f1d5cc36beac725b2771e27d1f081d4f6f04e5689c00d1",
+  "blockchain_simulation": "df3414cc84f2065c510985926d3f7c3d6e8b9f34ea7242285d72b6b671a9e211"
+}

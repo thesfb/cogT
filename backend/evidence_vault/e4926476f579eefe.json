@@ -1,0 +1,24 @@
+{
+  "id": "e4926476f579eefe",
+  "timestamp": "2025-09-03T14:30:26.175642",
+  "content": "Patience and discipline are the keys to long-term market success.",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "twitter",
+    "original_url": "http://example.com/tweet/123",
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 1.0,
+      "drift_score": 27.33,
+      "visual_threat_score": 0,
+      "justification": "The VIP's past statements consistently reflect and reinforce the importance of patience and discipline, showing no dissonance with the external claim.",
+      "visual_details": {}
+    },
+    "classification": {
+      "level": "low",
+      "score": 2.7329999999999997
+    }
+  },
+  "integrity_hash": "694d3049162a1c5b4077724c6a51c592c9bab3165b67a705ca63fc2736e04834",
+  "blockchain_simulation": "1015de06c49d4536bac07de839f68623075f5ff81a7d5c058954b75cf439cfea"
+}

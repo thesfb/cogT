@@ -2,29 +2,38 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict
+
+import threading
+import time
+import chromadb
+
+# Import specific scanner function instead of the continuous runner
+from app.scanner import scan_reddit_for_mentions
+from app.telegram_monitor import TelegramMonitor
 
 # --- Import existing modules ---
 from app.twin_builder import build_and_store_twin
 from app.analysis import check_dissonance, check_stylometric_drift
-
-# --- Import simple Telegram alert system ---
 from app.alert_system import SimpleCrisisEngine
 
-# Create the FastAPI app
-app = FastAPI(title="VIP Guardian API", version="2.0.0")
+# --- Import NEW visual analysis module ---
+from app.visual_analysis import get_image_fingerprint_from_url, analyze_image_content_from_url, transcribe_audio_from_video_url
 
-# Initialize crisis engine (Telegram-only)
+# Create the FastAPI app
+app = FastAPI(title="VIP Guardian API", version="3.2.0 Manual Scan")
+
+# Initialize crisis engine
 crisis_engine = SimpleCrisisEngine()
 
 # --- CORS Middleware ---
 origins = [
     "http://localhost",
     "http://localhost:3000",
-    "http://localhost:5173",  # Vite default
+    "http://localhost:5173",
 ]
 
 app.add_middleware(
@@ -39,12 +48,16 @@ app.add_middleware(
 class TwinRequest(BaseModel):
     twitter_handle: str
 
+# UPDATED ThreatAnalysisRequest to include fake account data
 class ThreatAnalysisRequest(BaseModel):
     twitter_handle: str
     text_to_check: str
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
     platform: Optional[str] = "unknown"
     source_url: Optional[str] = None
     enable_alerts: Optional[bool] = True
+    fake_account_analysis: Optional[Dict] = None # INTEGRATION: Add field for fake account data
 
 class DissonanceRequest(BaseModel):
     twitter_handle: str
@@ -59,10 +72,8 @@ class DriftRequest(BaseModel):
 def read_root():
     return {
         "status": "VIP Guardian Backend Online 🛡️",
-        "version": "2.0.0",
-        "alert_system": "Telegram (Free & Unlimited)",
-        "features": ["cognitive_twins", "threat_analysis", "telegram_alerts", "evidence_vault"],
-        "cost": "$0.00 per month"
+        "version": "3.2.0 Manual Scan",
+        "features": ["cognitive_twins", "text_analysis", "visual_analysis", "telegram_alerts", "evidence_vault", "manual_scanners"],
     }
 
 @app.get("/health")
@@ -71,12 +82,11 @@ def health_check():
     return {
         "status": "healthy",
         "services": {
-            "database": "connected (ChromaDB)", 
-            "ai_models": "loaded (local)",
+            "database": "connected (ChromaDB)",
+            "ai_models": "loaded (Gemini, SentenceTransformer, GCP Vision/Speech)",
             "telegram_alerts": telegram_status,
             "evidence_vault": "ready (local)"
-        },
-        "cost_status": "100% free"
+        }
     }
 
 # --- Twin Management ---
@@ -90,212 +100,191 @@ def build_twin_endpoint(request: TwinRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# --- Legacy Analysis Endpoints ---
-@app.post("/analyze/dissonance")
-def analyze_dissonance_endpoint(request: DissonanceRequest):
-    try:
-        result = check_dissonance(request.twitter_handle, request.text_to_check)
-        if result.get("error"):
-            raise HTTPException(status_code=400, detail=result["error"])
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/analyze/drift")
-def analyze_drift_endpoint(request: DriftRequest):
-    try:
-        result = check_stylometric_drift(request.twitter_handle, request.text_to_check)
-        if result.get("error"):
-            raise HTTPException(status_code=400, detail=result["error"])
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# --- NEW: Main Analysis Endpoint with Telegram Alerts ---
+# --- Main Multi-Modal Analysis Endpoint ---
 @app.post("/analyze/threat")
-async def threat_analysis_with_alerts(request: ThreatAnalysisRequest):
+async def comprehensive_threat_analysis(request: ThreatAnalysisRequest):
     """
-    Complete threat analysis with automatic Telegram alerts and evidence capture
+    Main endpoint for multi-modal threat analysis (text, image, video).
     """
     try:
-        # Run both analysis engines
-        dissonance_result = check_dissonance(request.twitter_handle, request.text_to_check)
-        drift_result = check_stylometric_drift(request.twitter_handle, request.text_to_check)
+        vip_handle = request.twitter_handle
+        full_content = request.text_to_check
         
-        # Check for errors
+        # --- 1. Text Analysis (Baseline) ---
+        dissonance_result = check_dissonance(vip_handle, full_content)
+        drift_result = check_stylometric_drift(vip_handle, full_content)
+        
         if dissonance_result.get("error"):
-            raise HTTPException(status_code=400, detail=dissonance_result["error"])
+            dissonance_result = {"score": 0, "justification": "Could not perform dissonance check; twin may not cover this topic."}
         if drift_result.get("error"):
-            raise HTTPException(status_code=400, detail=drift_result["error"])
-        
-        # Combine results
+            drift_result = {"drift_score": 0}
+
+        # --- 2. Visual Analysis (Conditional) ---
+        visual_analysis_details = {}
+        ocr_dissonance_score = 0
+        transcript_dissonance_score = 0
+
+        if request.image_url:
+            fingerprint = get_image_fingerprint_from_url(request.image_url)
+            content_analysis = analyze_image_content_from_url(request.image_url)
+            visual_analysis_details["image"] = { "perceptual_hash": fingerprint, **content_analysis }
+            if content_analysis.get("ocr_text"):
+                ocr_dissonance = check_dissonance(vip_handle, content_analysis["ocr_text"])
+                ocr_dissonance_score = ocr_dissonance.get("score", 0)
+
+        if request.video_url:
+            transcript = transcribe_audio_from_video_url(request.video_url)
+            visual_analysis_details["video"] = { "audio_transcript": transcript }
+            if transcript:
+                transcript_dissonance = check_dissonance(vip_handle, transcript)
+                transcript_dissonance_score = transcript_dissonance.get("score", 0)
+
+        # --- 3. Combine and Score ---
+        dissonance_score = dissonance_result.get("score", 0)
+        drift_score = drift_result.get("drift_score", 0)
+        visual_threat_score = max(ocr_dissonance_score, transcript_dissonance_score)
+
         combined_analysis = {
-            "dissonance": dissonance_result,
-            "drift": drift_result,
-            "score": dissonance_result.get("score", 0),
-            "drift_score": drift_result.get("drift_score", 0),
-            "justification": dissonance_result.get("justification", "Analysis completed")
+            "dissonance_score": dissonance_score,
+            "drift_score": drift_score,
+            "visual_threat_score": visual_threat_score,
+            "justification": dissonance_result.get("justification", "Analysis completed."),
+            "visual_details": visual_analysis_details
         }
-        
-        # Process through crisis engine if alerts enabled
+
+        # --- 4. Process Alerts ---
         if request.enable_alerts:
             threat_response = await crisis_engine.process_threat(
                 analysis_result=combined_analysis,
-                content=request.text_to_check,
-                vip_handle=request.twitter_handle,
+                content=full_content,
+                vip_handle=vip_handle,
                 platform=request.platform,
-                url=request.source_url
+                url=request.source_url,
+                fake_account_analysis=request.fake_account_analysis
             )
-            
-            return {
-                "analysis": combined_analysis,
-                "threat_response": threat_response,
-                "alert_system": "telegram_active",
-                "cost": "$0.00"
-            }
+            return {"analysis": combined_analysis, "threat_response": threat_response}
         else:
-            return {
-                "analysis": combined_analysis,
-                "alert_system": "disabled"
-            }
-            
+            return {"analysis": combined_analysis, "alert_system": "disabled"}
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
+
+# --- Legacy/Debug Analysis Endpoints ---
+@app.post("/analyze/dissonance")
+def analyze_dissonance_endpoint(request: DissonanceRequest):
+    return check_dissonance(request.twitter_handle, request.text_to_check)
+
+@app.post("/analyze/drift")
+def analyze_drift_endpoint(request: DriftRequest):
+    return check_stylometric_drift(request.twitter_handle, request.text_to_check)
 
 # --- Evidence & Alert Management ---
 @app.get("/alerts/{alert_id}")
 def get_alert_details(alert_id: str):
-    """Get details of a specific alert"""
-    try:
-        result = crisis_engine.get_alert_status(alert_id)
-        if result.get("error"):
-            raise HTTPException(status_code=404, detail=result["error"])
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/alerts/active/summary")
-def get_alerts_summary():
-    """Get summary of all active alerts"""
-    try:
-        active_alerts = crisis_engine.active_alerts
-        
-        summary = {
-            "total_alerts": len(active_alerts),
-            "by_threat_level": {"critical": 0, "high": 0, "medium": 0, "low": 0},
-            "telegram_enabled": crisis_engine.telegram_alerts.telegram_enabled,
-            "recent_alerts": []
-        }
-        
-        for alert_id, alert_data in active_alerts.items():
-            threat_level = alert_data["threat_data"]["classification"]["level"].value
-            summary["by_threat_level"][threat_level] += 1
-            
-            if len(summary["recent_alerts"]) < 10:
-                summary["recent_alerts"].append({
-                    "alert_id": alert_id,
-                    "vip_handle": alert_data["threat_data"]["vip_handle"],
-                    "threat_level": threat_level,
-                    "score": alert_data["threat_data"]["classification"]["score"],
-                    "created_at": alert_data["created_at"]
-                })
-        
-        return summary
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    result = crisis_engine.get_alert_status(alert_id)
+    if result.get("error"):
+        raise HTTPException(status_code=404, detail=result["error"])
+    return result
 
 @app.get("/evidence/{evidence_id}")
 def get_evidence_details(evidence_id: str):
-    """Get evidence details"""
     try:
         import json
         import os
-        
         evidence_file = f"evidence_vault/{evidence_id}.json"
         if not os.path.exists(evidence_file):
             raise HTTPException(status_code=404, detail="Evidence not found")
-        
         with open(evidence_file, 'r') as f:
-            evidence = json.load(f)
-        
-        return {
-            "evidence_id": evidence["id"],
-            "timestamp": evidence["timestamp"],
-            "content": evidence["content"],
-            "platform": evidence["metadata"].get("platform", "unknown"),
-            "vip_handle": evidence["metadata"].get("vip_handle"),
-            "integrity_hash": evidence["integrity_hash"],
-            "blockchain_simulation": evidence["blockchain_simulation"][:16] + "...",
-            "cost": "$0.00"
-        }
+            return json.load(f)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# --- Demo Endpoints ---
-@app.post("/demo/telegram-alert")
-async def demo_telegram_alert():
-    """Demo endpoint to test Telegram alerts"""
-    try:
-        demo_content = "URGENT: This is a fake account impersonating @demo_vip to spread false information!"
-        
-        threat_response = await crisis_engine.process_threat(
-            analysis_result={
-                "score": 8.5, 
-                "drift_score": 75.0,
-                "justification": "High dissonance detected - content contradicts VIP's established public statements"
-            },
-            content=demo_content,
-            vip_handle="demo_vip",
-            platform="twitter",
-            url="https://twitter.com/fake_account/status/123456789"
-        )
-        
-        return {
-            "message": "Demo Telegram alert sent! Check your Telegram bot.",
-            "response": threat_response
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+# --- Telegram Setup Helper ---
 @app.get("/setup/telegram")
 def telegram_setup_guide():
-    """Returns setup instructions for Telegram bot"""
-    return {
-        "title": "Free Telegram Alert Setup (2 minutes)",
-        "steps": [
-            "1. Open Telegram and search for '@BotFather'",
-            "2. Send /newbot command to BotFather",
-            "3. Choose a name and username for your bot",
-            "4. Copy the bot token (long string with numbers and letters)",
-            "5. Add TELEGRAM_BOT_TOKEN=your_token to your .env file",
-            "6. Send a message to your new bot",
-            "7. Visit: https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates",
-            "8. Find 'chat' -> 'id' number in the response",
-            "9. Add TELEGRAM_CHAT_ID=your_chat_id to your .env file",
-            "10. Restart the backend - you're done! 🎉"
-        ],
-        "cost": "100% FREE - Unlimited messages",
-        "benefits": [
-            "Instant mobile notifications",
-            "Rich formatting with emojis", 
-            "Works anywhere in the world",
-            "No daily limits",
-            "Professional looking alerts"
-        ]
-    }
+    return { "message": "See documentation for setting up Telegram bot tokens for alerts (TELEGRAM_BOT_TOKEN) and monitoring (TELEGRAM_MONITOR_BOT_TOKEN)." }
 
-# --- Startup Message ---
+# --- Manual Scanner Logic ---
+def perform_reddit_scan():
+    """Performs a single scan cycle on Reddit for all monitored VIPs."""
+    print("\n--- Triggering single Reddit scan cycle ---")
+    chroma_client = chromadb.PersistentClient(path="./db")
+    subreddits_to_scan = ['politics', 'worldnews', 'news', 'technology', 'conspiracy']
+    
+    collections = chroma_client.list_collections()
+    monitored_vips = [col.name.replace("vip_", "") for col in collections]
+
+    if not monitored_vips:
+        print("[Scanner] No VIP twins found for Reddit scan. Skipping.")
+        return
+    
+    print(f"[Scanner] Monitoring {len(monitored_vips)} VIPs on Reddit: {', '.join(monitored_vips)}")
+    for vip in monitored_vips:
+        scan_reddit_for_mentions(vip, subreddits_to_scan)
+    print("--- Reddit scan cycle complete. ---")
+
+
+def perform_telegram_scan():
+    """Performs a single scan cycle on Telegram for all monitored VIPs."""
+    print("\n--- Triggering single Telegram scan cycle ---")
+    chroma_client = chromadb.PersistentClient(path="./db")
+    telegram_monitor = TelegramMonitor()
+
+    collections = chroma_client.list_collections()
+    monitored_vips = [col.name.replace("vip_", "") for col in collections]
+
+    if not monitored_vips:
+        print("[Telegram Scanner] No VIP twins found. Skipping.")
+        return
+
+    print(f"[Telegram Scanner] Monitoring {len(monitored_vips)} VIPs: {', '.join(monitored_vips)}")
+    impersonators = telegram_monitor.detect_impersonation_channels(monitored_vips)
+    if impersonators:
+        print(f"Found {len(impersonators)} potential impersonation channels. Processing...")
+        for vip in monitored_vips:
+            vip_impersonators = [imp for imp in impersonators if imp.get('target_vip') == vip]
+            telegram_monitor.process_telegram_mentions(vip_impersonators, vip)
+
+    for vip in monitored_vips:
+        mentions = telegram_monitor.scan_all_channels_for_vip(vip)
+        if mentions:
+            print(f"Found {len(mentions)} potential mentions on Telegram for {vip}. Processing...")
+            telegram_monitor.process_telegram_mentions(mentions, vip)
+
+    print(f"--- Telegram scan cycle complete. ---")
+
+# --- New Endpoint to Trigger Scanners ---
+@app.post("/scanners/trigger", status_code=202)
+def trigger_scanners(background_tasks: BackgroundTasks):
+    """
+    Triggers a one-time scan for all VIPs on both Reddit and Telegram.
+    The scans run in the background.
+    """
+    print("API call received to trigger scanners.")
+    background_tasks.add_task(perform_reddit_scan)
+    background_tasks.add_task(perform_telegram_scan)
+    return {"message": "Scanners for Reddit and Telegram have been triggered in the background."}
+
+
 @app.on_event("startup")
 async def startup_event():
+    """Handles all startup tasks for the application."""
     print("🚀 VIP Guardian Backend Starting...")
+    
+    print("✅ Scanners are on standby. Trigger them via the POST /scanners/trigger endpoint.")
+
+    # Check Telegram alert status
     if crisis_engine.telegram_alerts.telegram_enabled:
         print("✅ Telegram alerts: ACTIVE")
     else:
         print("⚠️ Telegram alerts: Console fallback (add TELEGRAM_BOT_TOKEN & TELEGRAM_CHAT_ID to .env)")
+    
     print("✅ Evidence vault: Ready")
-    print("✅ Cost: $0.00/month")
     print("🛡️ VIP Guardian is protecting your digital presence!")
 
+    
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

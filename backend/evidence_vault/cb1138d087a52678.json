@@ -1,0 +1,24 @@
+{
+  "id": "cb1138d087a52678",
+  "timestamp": "2025-09-03T14:30:54.649378",
+  "content": "I just liquidated all my assets to invest in a meme coin. Who cares about fundamentals, lets get rich quick!",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "facebook",
+    "original_url": "http://example.com/post/456",
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 9.8,
+      "drift_score": 21.81,
+      "visual_threat_score": 0,
+      "justification": "The impulsive 'get rich quick' investment in a meme coin, disregarding fundamentals, directly contradicts the stated values of discipline, steady growth, and sound entrepreneurial mentorship.",
+      "visual_details": {}
+    },
+    "classification": {
+      "level": "low",
+      "score": 2.181
+    }
+  },
+  "integrity_hash": "00323c1c7b0838b17d95742f4c4d5bf76bd155a6c9acb1f78d8b33217913d2eb",
+  "blockchain_simulation": "23375a2f179af37638b731f2aab8fec99edc90dc324a1ff86c788e8dcdb722ce"
+}

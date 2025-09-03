@@ -1,4 +1,4 @@
-# backend/app/telegram_alert.py - Fixed version
+# backend/app/alert_system.py - Integrated version
 
 import asyncio
 import json
@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional
 import requests
+
 
 class TelegramAlertSystem:
     """Simple, free Telegram-only alert system"""
@@ -23,24 +24,24 @@ class TelegramAlertSystem:
             print("✅ Telegram alerts enabled")
     
     def classify_threat(self, dissonance_score: float = 0, drift_score: float = 0, 
-                       content: str = "") -> Dict:
-        """Simple threat classification - returns plain dict"""
+                       content: str = "", fake_account_score: float = 0) -> Dict:
+        """Simple threat classification - now includes fake account risk"""
         
         # Critical keywords that boost threat score
         critical_keywords = ["death", "kill", "bomb", "attack", "doxx", "leak", "hack", "threat"]
         high_keywords = ["fake", "fraud", "scam", "imposter", "lie", "false"]
         
-        # Start with max of dissonance or normalized drift score
-        base_score = max(dissonance_score, drift_score / 10)
+        # Base score is the max of content dissonance, style drift, or fake account risk
+        base_score = max(dissonance_score, drift_score / 10, fake_account_score)
         
-        # Boost score based on keywords
+        # Boost score based on keywords in content
         content_lower = content.lower()
         if any(word in content_lower for word in critical_keywords):
             base_score = min(10.0, base_score + 3.0)
         elif any(word in content_lower for word in high_keywords):
             base_score = min(10.0, base_score + 1.5)
         
-        # Classify threat level - return string instead of enum
+        # Classify threat level
         if base_score >= 9.0:
             return {"level": "critical", "score": base_score}
         elif base_score >= 7.0:
@@ -58,6 +59,17 @@ class TelegramAlertSystem:
             
             threat_level = threat_data['classification']['level'].upper()
             
+            # --- INTEGRATION: Format fake account info for the alert ---
+            fake_account_section = ""
+            fake_info = threat_data.get("fake_account_analysis")
+            if fake_info and fake_info.get("risk_score", 0) > 0:
+                risk_level = "SUSPICIOUS"
+                if fake_info.get("fake_account_risk_score", fake_info.get("risk_score",0)) > 7.0:
+                    risk_level = "HIGH RISK"
+                
+                risk_score = fake_info.get("fake_account_risk_score", fake_info.get("risk_score", 0))
+                fake_account_section = f"\n*Impersonation Risk:* {risk_level} ({risk_score:.1f}/10)"
+
             # Telegram formatting with emojis
             emoji_map = {
                 "CRITICAL": "🚨🔥",
@@ -72,7 +84,7 @@ class TelegramAlertSystem:
 
 *VIP:* @{threat_data.get('vip_handle')}
 *Threat Score:* {threat_data['classification']['score']:.1f}/10
-*Platform:* {threat_data.get('platform', 'Unknown')}
+*Platform:* {threat_data.get('platform', 'Unknown')}{fake_account_section}
 
 *Content:*
 ```
@@ -111,6 +123,16 @@ _{threat_data.get('analysis_reason', 'Analysis completed')}_
         """Fallback console alert"""
         try:
             threat_level = threat_data['classification']['level'].upper()
+
+            # --- INTEGRATION: Add fake account info to console alert ---
+            fake_account_line = ""
+            fake_info = threat_data.get("fake_account_analysis")
+            if fake_info and fake_info.get("risk_score", 0) > 0:
+                risk_level = "SUSPICIOUS"
+                if fake_info.get("fake_account_risk_score", fake_info.get("risk_score",0)) > 7.0:
+                    risk_level = "HIGH RISK"
+                risk_score = fake_info.get("fake_account_risk_score", fake_info.get("risk_score", 0))
+                fake_account_line = f" | Impersonation Risk: {risk_level} ({risk_score:.1f}/10)"
             
             # ANSI colors for console
             colors = {
@@ -127,7 +149,7 @@ _{threat_data.get('analysis_reason', 'Analysis completed')}_
             print(f"""
 {color}🚨 {threat_level} THREAT ALERT 🚨{reset}
 VIP: @{threat_data.get('vip_handle')} | Score: {threat_data['classification']['score']:.1f}/10
-Platform: {threat_data.get('platform', 'Unknown')}
+Platform: {threat_data.get('platform', 'Unknown')}{fake_account_line}
 
 Content: {threat_data.get('content', 'N/A')[:200]}...
 
@@ -182,33 +204,43 @@ class SimpleCrisisEngine:
     
     async def process_threat(self, analysis_result: Dict, content: str, 
                            vip_handle: str, platform: str = "unknown", 
-                           url: str = None) -> Dict:
-        """Main threat processing pipeline"""
+                           url: str = None, fake_account_analysis: Optional[Dict] = None) -> Dict:
+        """Main threat processing pipeline, now aware of fake account analysis"""
         try:
             # Get scores from analysis
-            dissonance_score = analysis_result.get('score', 0)
+            dissonance_score = analysis_result.get('dissonance_score', 0)
             drift_score = analysis_result.get('drift_score', 0)
             
+            # --- INTEGRATION: Include fake account risk in threat classification ---
+            fake_report = fake_account_analysis or {}
+            fake_score = fake_report.get("fake_account_risk_score", fake_report.get("risk_score", 0))
+
             # Classify threat level
             classification = self.telegram_alerts.classify_threat(
                 dissonance_score=dissonance_score,
                 drift_score=drift_score,
-                content=content
+                content=content,
+                fake_account_score=fake_score
             )
             
-            # Capture evidence
+            # Archive the evidence URL on the Wayback Machine before local capture
+            archived_url = archive_url_on_wayback(url) if url else None
+
+            # Capture evidence, now including the archived URL and fake account data
             evidence_data = self.evidence_vault.capture_evidence(
                 content=content,
                 metadata={
                     "vip_handle": vip_handle,
                     "platform": platform,
-                    "url": url,
+                    "original_url": url,
+                    "archived_url": archived_url,
                     "analysis_result": analysis_result,
-                    "classification": classification
+                    "classification": classification,
+                    "fake_account_analysis": fake_account_analysis # Store fake account data in evidence
                 }
             )
             
-            # Prepare threat data
+            # Prepare threat data for alerts
             threat_data = {
                 "vip_handle": vip_handle,
                 "content": content,
@@ -218,22 +250,23 @@ class SimpleCrisisEngine:
                 "classification": classification,
                 "analysis_reason": analysis_result.get('justification', 'AI analysis completed'),
                 "evidence_id": evidence_data["evidence_id"],
-                "blockchain_hash": evidence_data["blockchain_hash"]
+                "blockchain_hash": evidence_data["blockchain_hash"],
+                "fake_account_analysis": fake_account_analysis # Pass fake account data to alerts
             }
             
             # Send alerts
             alert_results = []
             
-            # Always show console alert
+            # Always show a console alert for logging purposes
             console_result = self.telegram_alerts.send_console_alert(threat_data)
             alert_results.append(console_result)
             
-            # Send Telegram alert for medium+ threats
+            # Send a Telegram alert for medium, high, or critical threats
             if classification["level"] in ["medium", "high", "critical"]:
                 telegram_result = await self.telegram_alerts.send_telegram_alert(threat_data)
                 alert_results.append(telegram_result)
             
-            # Store alert
+            # Store the active alert in memory
             alert_id = evidence_data["evidence_id"]
             self.active_alerts[alert_id] = {
                 "threat_data": threat_data,
@@ -241,6 +274,7 @@ class SimpleCrisisEngine:
                 "created_at": datetime.now().isoformat()
             }
             
+            # Return a comprehensive response to the API caller
             return {
                 "alert_id": alert_id,
                 "threat_level": classification["level"],
@@ -253,8 +287,20 @@ class SimpleCrisisEngine:
             }
             
         except Exception as e:
+            # Raise an exception to be caught by the FastAPI endpoint handler
             raise Exception(f"Threat processing failed: {str(e)}")
-    
-    def get_alert_status(self, alert_id: str) -> Dict:
-        """Get alert details"""
-        return self.active_alerts.get(alert_id, {"error": "Alert not found"})
+
+def archive_url_on_wayback(url_to_archive: str) -> Optional[str]:
+    """Saves a URL to the Internet Archive's Wayback Machine."""
+    if not url_to_archive:
+        return None
+    try:
+        save_url = f"https://web.archive.org/save/{url_to_archive}"
+        response = requests.get(save_url, timeout=30)
+        response.raise_for_status()
+        archived_url = "https://web.archive.org" + response.headers.get("content-location", "")
+        print(f"Successfully archived URL: {archived_url}")
+        return archived_url
+    except Exception as e:
+        print(f"Could not archive URL on Wayback Machine: {e}")
+        return None

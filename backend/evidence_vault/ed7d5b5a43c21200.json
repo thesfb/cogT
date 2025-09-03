@@ -1,0 +1,25 @@
+{
+  "id": "ed7d5b5a43c21200",
+  "timestamp": "2025-09-03T15:28:14.312449",
+  "content": "VIP mentioned in Telegram channel None. Variation found: None",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "Telegram",
+    "original_url": null,
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 1.0,
+      "drift_score": 30.36,
+      "visual_threat_score": 0,
+      "justification": "The ground truth statements describe the VIP's personal activities and preferences, offering no information to contradict or support the claim regarding mentions in a Telegram channel.",
+      "visual_details": {}
+    },
+    "classification": {
+      "level": "low",
+      "score": 3.036
+    },
+    "fake_account_analysis": null
+  },
+  "integrity_hash": "af4ef1f25ec3eb1fcc9e3f30f84833d0d2b1c31969de0562f3045a6cdf56ce6e",
+  "blockchain_simulation": "3ae0d856c21ad71996973d9ecb850d68e3dcbe2600834b9ea3c8ad3bc93f699c"
+}

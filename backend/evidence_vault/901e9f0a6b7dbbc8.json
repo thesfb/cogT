@@ -1,0 +1,34 @@
+{
+  "id": "901e9f0a6b7dbbc8",
+  "timestamp": "2025-09-03T15:09:30.320781",
+  "content": "Look at this damning evidence I found.",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "Facebook",
+    "original_url": "https://facebook.com/fakepost/54321",
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 1.0,
+      "drift_score": 4.64,
+      "visual_threat_score": 0,
+      "justification": "The VIP's past statements are personal reflections on unrelated topics and do not create any contradiction or dissonance with a new claim about finding evidence.",
+      "visual_details": {
+        "image": {
+          "perceptual_hash": "cedb964b92c8cb09",
+          "labels": [
+            "People",
+            "Pollution",
+            "Blue-collar worker"
+          ],
+          "ocr_text": ""
+        }
+      }
+    },
+    "classification": {
+      "level": "low",
+      "score": 0.46399999999999997
+    }
+  },
+  "integrity_hash": "4f1c9ffb06761591f115ba1d210f0c7745efaf0d50929fe6fd89903a552a022c",
+  "blockchain_simulation": "b98be34256d09467fabebfe1ee91fd241d3fe3afcf66e421bf0c5b0db3b28f25"
+}

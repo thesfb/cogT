@@ -1,0 +1,24 @@
+{
+  "id": "d2bd51a51a52a6fc",
+  "timestamp": "2025-09-03T14:36:28.888744",
+  "content": "This is a test to see if archiving works.",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "test_platform",
+    "original_url": "http://example.com",
+    "archived_url": null,
+    "analysis_result": {
+      "dissonance_score": 8.0,
+      "drift_score": 23.02,
+      "visual_threat_score": 0,
+      "justification": "The VIP's consistent public preference for old-fashioned, non-digital methods (handwritten notes, physical newspapers) creates high dissonance with actively testing a system (likely digital) to see if 'archiving works'.",
+      "visual_details": {}
+    },
+    "classification": {
+      "level": "low",
+      "score": 2.302
+    }
+  },
+  "integrity_hash": "e30c497585b20cce34b4f2306b5df33bc19809b11e5a3735d9e24b682713b3bb",
+  "blockchain_simulation": "25cb7ddafbb29df846bc063d8ebe083fa7aa414c0f1da554154fc1b475e0171a"
+}
