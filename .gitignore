@@ -8,3 +8,5 @@ venv/
 evidence_vault/
 
 index.html
+
+db/
