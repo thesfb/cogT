@@ -452,7 +452,7 @@ MOCK_TWEETS = {
     # Persona 9: Inspired by Steve Jobs
     # Username: juliancroft
     # Bio: Founder of 'Orchard'. We're here to make a dent in the universe.
-    "juliancroft": [
+    "amitshah": [
         "Design is not just what it looks like and feels like. Design is how it works.",
         "Simplicity is the ultimate sophistication.",
         "The people who are crazy enough to think they can change the world are the ones who do.",

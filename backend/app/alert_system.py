@@ -9,6 +9,35 @@ from typing import Dict, List, Optional
 import requests
 
 
+def archive_url_on_wayback(url_to_archive: str) -> Optional[str]:
+    """Save a URL to the Internet Archive's Wayback Machine and return the archived URL."""
+    if not url_to_archive:
+        return None
+    try:
+        save_url = f"https://web.archive.org/save/{url_to_archive}"
+        response = requests.post(save_url, timeout=30, allow_redirects=False)
+        response.raise_for_status()
+
+        # First try the header
+        content_loc = response.headers.get("Content-Location")
+        if content_loc:
+            return f"https://web.archive.org{content_loc}"
+
+        # Fallback: check if Wayback immediately created a snapshot
+        check_url = f"http://archive.org/wayback/available?url={url_to_archive}"
+        check_resp = requests.get(check_url, timeout=15)
+        if check_resp.ok:
+            data = check_resp.json()
+            snapshot = data.get("archived_snapshots", {}).get("closest", {}).get("url")
+            if snapshot:
+                return snapshot
+
+        return None
+
+    except Exception as e:
+        print(f"Wayback archive error for {url_to_archive}: {e}")
+        return None
+
 class TelegramAlertSystem:
     """Simple, free Telegram-only alert system"""
     
@@ -290,17 +319,3 @@ class SimpleCrisisEngine:
             # Raise an exception to be caught by the FastAPI endpoint handler
             raise Exception(f"Threat processing failed: {str(e)}")
 
-def archive_url_on_wayback(url_to_archive: str) -> Optional[str]:
-    """Saves a URL to the Internet Archive's Wayback Machine."""
-    if not url_to_archive:
-        return None
-    try:
-        save_url = f"https://web.archive.org/save/{url_to_archive}"
-        response = requests.get(save_url, timeout=30)
-        response.raise_for_status()
-        archived_url = "https://web.archive.org" + response.headers.get("content-location", "")
-        print(f"Successfully archived URL: {archived_url}")
-        return archived_url
-    except Exception as e:
-        print(f"Could not archive URL on Wayback Machine: {e}")
-        return None

@@ -10,3 +10,7 @@ evidence_vault/
 index.html
 
 db/
+
+mock_data.py
+demo_model.plk
+train_demo_model.py

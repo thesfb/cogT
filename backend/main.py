@@ -6,6 +6,10 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict
+from fastapi import UploadFile, File
+import imagehash
+from PIL import Image
+import os, json
 
 import threading
 import time
@@ -25,6 +29,101 @@ from app.visual_analysis import get_image_fingerprint_from_url, analyze_image_co
 
 # Create the FastAPI app
 app = FastAPI(title="VIP Guardian API", version="3.2.0 Manual Scan")
+
+
+PHASH_DB = "phash_store.json"
+def load_phash_db():
+    if os.path.exists(PHASH_DB):
+        with open(PHASH_DB, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_phash_db(db):
+    with open(PHASH_DB, "w") as f:
+        json.dump(db, f)
+
+@app.post("/phash/upload")
+async def phash_upload(file: UploadFile = File(...)):
+    try:
+        img = Image.open(file.file).convert("RGB")
+
+        # --- Compute multiple hashes ---
+        new_hashes = {
+            "phash": str(imagehash.phash(img)),
+            "ahash": str(imagehash.average_hash(img)),
+            "dhash": str(imagehash.dhash(img)),
+            "whash": str(imagehash.whash(img))
+        }
+
+        db = load_phash_db()
+        similar_to = None
+        best_match = {"file": None, "avg_distance": 999}
+
+        # --- Compare against stored hashes ---
+        for img_id, stored_hashes in db.items():
+            distances = []
+            for htype in new_hashes:
+                try:
+                    # If old DB entry (string only), skip
+                    if isinstance(stored_hashes, str):
+                        continue  
+
+                    h1 = imagehash.hex_to_hash(new_hashes[htype])
+                    h2 = imagehash.hex_to_hash(stored_hashes[htype])
+                    distances.append(h1 - h2)
+                except Exception as e:
+                    continue
+
+            if distances:
+                avg_dist = sum(distances) / len(distances)
+                if avg_dist < best_match["avg_distance"]:
+                    best_match = {"file": img_id, "avg_distance": avg_dist}
+
+        # Decide if similar
+        if best_match["avg_distance"] <= 8:  # 👈 threshold
+            similar_to = best_match["file"]
+
+        # Save new hash entry
+        db[file.filename] = new_hashes
+        save_phash_db(db)
+
+        return {
+            "file": file.filename,
+            "hashes": new_hashes,
+            "similar_to": similar_to,
+            "avg_distance": best_match["avg_distance"],
+            "message": f"Similar to {similar_to} (avg distance {best_match['avg_distance']:.2f})"
+                       if similar_to else "No similar images detected"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    try:
+        # Save file temporarily
+        img = Image.open(file.file).convert("RGB")
+        phash = str(imagehash.phash(img))
+        
+        db = load_phash_db()
+        # Check similarity with existing hashes
+        similar_to = None
+        for img_id, stored_hash in db.items():
+            diff = imagehash.hex_to_hash(phash) - imagehash.hex_to_hash(stored_hash)
+            if diff <= 5:  # threshold (tuneable)
+                similar_to = img_id
+                break
+        
+        # Store new
+        db[file.filename] = phash
+        save_phash_db(db)
+        
+        return {
+            "file": file.filename,
+            "phash": phash,
+            "similar_to": similar_to,
+            "message": f"Similar to {similar_to}" if similar_to else "No similar images detected"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Initialize crisis engine
 crisis_engine = SimpleCrisisEngine()
