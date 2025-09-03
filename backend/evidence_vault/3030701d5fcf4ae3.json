@@ -1,0 +1,22 @@
+{
+  "id": "3030701d5fcf4ae3",
+  "timestamp": "2025-09-03T11:28:11.000012",
+  "content": "This fake account @manishpatel is a fraud and scammer! He steals money from innocent people and should be arrested immediately. Spread the word!",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "twitter",
+    "url": "https://twitter.com/fake_account/status/123456789",
+    "analysis_result": {
+      "dissonance": {
+        "score": 1.5,
+        "justification": "The VIP's general praise for social media and business acumen does not contradict, and is arguably consistent with, condemning a specific instance of alleged online fraud."
+      },
+      "drift": {
+        "drift_score": 7.46
+      },
+      "score": 1.5,
+      "drift_score": 7.46,
+      "justification": "The VIP's general praise for social media and business acumen does not contradict, and is arguably consistent with, condemning a specific instance of alleged online fraud."
+    },
+    "classification": {
+      "level": 

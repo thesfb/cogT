@@ -1,0 +1,28 @@
+{
+  "id": "763223c8ceeee255",
+  "timestamp": "2025-09-03T11:32:45.350021",
+  "content": "hey hawty gimme the booze eh haha lololol!!! He steals money from innocent people and should be arrested immediately. Spread the word!",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "twitter",
+    "url": "https://twitter.com/fake_account/status/123456789",
+    "analysis_result": {
+      "dissonance": {
+        "score": 10.0,
+        "justification": "The external claim's crude language, aggressive tone, and serious accusation of theft directly contradict the ground truth's depiction of a disciplined, calm, and business-respecting individual."
+      },
+      "drift": {
+        "drift_score": 2.78
+      },
+      "score": 10.0,
+      "drift_score": 2.78,
+      "justification": "The external claim's crude language, aggressive tone, and serious accusation of theft directly contradict the ground truth's depiction of a disciplined, calm, and business-respecting individual."
+    },
+    "classification": {
+      "level": "critical",
+      "score": 10.0
+    }
+  },
+  "integrity_hash": "331afd8d24f2db33e669fe7f1bdb6effdcb993a3733189cce67470ef649c5a95",
+  "blockchain_simulation": "e592580bfc0008dd8fd40361b2889dceeb6a3892ddf476042c9a16cd0f7117c8"
+}

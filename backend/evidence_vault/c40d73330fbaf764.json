@@ -1,0 +1,28 @@
+{
+  "id": "c40d73330fbaf764",
+  "timestamp": "2025-09-03T11:57:11.952682",
+  "content": "kill trump kill trump!!! He steals money from innocent people and should be arrested immediately. Spread the word!",
+  "metadata": {
+    "vip_handle": "manishpatel",
+    "platform": "twitter",
+    "url": "https://twitter.com/fake_account/status/123456789",
+    "analysis_result": {
+      "dissonance": {
+        "score": 9.5,
+        "justification": "The claim's violent, emotional, and accusatory tone directly contradicts the VIP's stated values of strategic silence, calm discipline, and a measured approach to powerful tools like social media."
+      },
+      "drift": {
+        "drift_score": 14.16
+      },
+      "score": 9.5,
+      "drift_score": 14.16,
+      "justification": "The claim's violent, emotional, and accusatory tone directly contradicts the VIP's stated values of strategic silence, calm discipline, and a measured approach to powerful tools like social media."
+    },
+    "classification": {
+      "level": "critical",
+      "score": 10.0
+    }
+  },
+  "integrity_hash": "45d084a5d259a05320fcdd7c5e2f983b8c858480e4f44d20f3e6761509993828",
+  "blockchain_simulation": "f7afec79f092ee31f68911a27797e4e62b0961392d36edf7c996812bb6774b13"
+}
